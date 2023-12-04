@@ -19,13 +19,6 @@ echo "<script>alert('Not register something went worng');</script>";
 }
 }
 // Code for User login
-$opts = array(
-	'http' => array(
-		'method' => 'POST',
-		'header' => 'Content-type: application/json',
-		'content' => json_encode($data)
-	)
-   );
 if(isset($_POST['login']))
 {
    $email=$_POST['email'];
@@ -33,10 +26,29 @@ if(isset($_POST['login']))
    $data=array('email'=>$email,'password'=>$password);
    
    $azfendpoint='https://authenticate44.azurewebsites.net/api/HttpTrigger1?code=Gi4dJV9ZTBStlZjmL9a8N6l1Nwbx9VfauNh-DabAlsPOAzFuJQp0pg=='
+   $payload = json_encode($data);
+    // Initialize cURL session
+    $ch = curl_init();
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_URL, $azfendpoint);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-   
-   $context = stream_context_create($opts);
-   $result = file_get_contents($azfendpoint, false, $context);
+    // Execute cURL session
+    $result = curl_exec($ch);
+
+    // Check for cURL errors
+    if (curl_errno($ch)) {
+        $_SESSION['errmsg'] = "Error in authentication: " . curl_error($ch);
+        $extra = "login.php";
+        header("location: $extra");
+        exit();
+    }
+
+    // Close cURL session
+    curl_close($ch);
    if ($result !== FALSE) {
 	$response = json_decode($result, true);
 

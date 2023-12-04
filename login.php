@@ -19,6 +19,13 @@ echo "<script>alert('Not register something went worng');</script>";
 }
 }
 // Code for User login
+$opts = array(
+	'http' => array(
+		'method' => 'POST',
+		'header' => 'Content-type: application/json',
+		'content' => json_encode($data)
+	)
+   );
 if(isset($_POST['login']))
 {
    $email=$_POST['email'];
@@ -26,13 +33,7 @@ if(isset($_POST['login']))
    $data=array('email'=>$email,'password'=>$password);
    
    $azfendpoint='https://authenticate44.azurewebsites.net/api/HttpTrigger1?code=Gi4dJV9ZTBStlZjmL9a8N6l1Nwbx9VfauNh-DabAlsPOAzFuJQp0pg=='
-   $opts = array(
-	'http' => array(
-		'method' => 'POST',
-		'header' => 'Content-type: application/json',
-		'content' => json_encode($data)
-	)
-   );
+
    
    $context = stream_context_create($opts);
    $result = file_get_contents($azfendpoint, false, $context);

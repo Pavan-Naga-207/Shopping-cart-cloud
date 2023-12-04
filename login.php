@@ -23,36 +23,56 @@ if(isset($_POST['login']))
 {
    $email=$_POST['email'];
    $password=md5($_POST['password']);
-$query=mysqli_query($con,"SELECT * FROM users WHERE email='$email' and password='$password'");
-$num=mysqli_fetch_array($query);
-if($num>0)
-{
-$extra="my-cart.php";
-$_SESSION['login']=$_POST['email'];
-$_SESSION['id']=$num['id'];
-$_SESSION['username']=$num['name'];
-$uip=$_SERVER['REMOTE_ADDR'];
-$status=1;
-$log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('".$_SESSION['login']."','$uip','$status')");
-$host=$_SERVER['HTTP_HOST'];
-$uri=rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
-header("location:http://$host$uri/$extra");
-exit();
+   $data=array('email'=>$email,'password'=>$password);
+   
+   $azfendpoint='https://authenticate4.azurewebsites.net/api/http_trigger?code=xaCRw_8vTx9bBh2HcQPQOziQ9LmV7a9_FcrnzgCJt6MUAzFuGQ4BxQ=='
+   $options = array(
+	'http' => array(
+		'method' => 'POST',
+		'header' => 'Content-type: application/json',
+		'content' => json_encode($data)
+	)
+   );
+   $context = stream_context_create($options);
+   $result = file_get_contents($azureFunctionEndpoint, false, $context);
+   if ($result !== FALSE) {
+	$response = json_decode($result, true);
+
+	// Check if authentication was successful
+	if ($response['authenticated']) {
+		$extra="my-cart.php";
+		$_SESSION['login']=$_POST['email'];
+		$_SESSION['id']=$num['id'];
+		$_SESSION['username']=$num['name'];
+		$uip=$_SERVER['REMOTE_ADDR'];
+		$status=1;
+		$log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('".$_SESSION['login']."','$uip','$status')");
+		$host=$_SERVER['HTTP_HOST'];
+		$uri=rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
+		header("location:http://$host$uri/$extra");
+		exit();
+	} else {
+		// Authentication failed, handle accordingly
+		$extra="login.php";
+		$email=$_POST['email'];
+		$uip=$_SERVER['REMOTE_ADDR'];
+		$status=0;
+		$log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('$email','$uip','$status')");
+		$host  = $_SERVER['HTTP_HOST'];
+		$uri  = rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
+		header("location:http://$host$uri/$extra");
+		$_SESSION['errmsg']="Invalid email id or Password";
+		exit();
+	}
+} else {
+	// Error in communicating with Azure Function
+	$_SESSION['errmsg'] = "Error in authentication";
+	$extra = "login.php";
+	header("location: $extra");
+	exit();
 }
-else
-{
-$extra="login.php";
-$email=$_POST['email'];
-$uip=$_SERVER['REMOTE_ADDR'];
-$status=0;
-$log=mysqli_query($con,"insert into userlog(userEmail,userip,status) values('$email','$uip','$status')");
-$host  = $_SERVER['HTTP_HOST'];
-$uri  = rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
-header("location:http://$host$uri/$extra");
-$_SESSION['errmsg']="Invalid email id or Password";
-exit();
 }
-}
+
 
 
 ?>

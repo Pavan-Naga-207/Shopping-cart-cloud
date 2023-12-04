@@ -25,19 +25,16 @@ if(isset($_POST['login']))
    $password=md5($_POST['password']);
    $data=array('email'=>$email,'password'=>$password);
    
-   $azfendpoint='https://authenticate44.azurewebsites.net/api/HttpTrigger1?code=Gi4dJV9ZTBStlZjmL9a8N6l1Nwbx9VfauNh-DabAlsPOAzFuJQp0pg=='
-   $payload = json_encode($data);
-    // Initialize cURL session
-    $ch = curl_init();
-    // Set cURL options
-    curl_setopt($ch, CURLOPT_URL, $azfendpoint);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    // Execute cURL session
-    $result = curl_exec($ch);
+   $azfendpoint='https://authenticate44.azurewebsites.net/api/HttpTrigger1?code=Gi4dJV9ZTBStlZjmL9a8N6l1Nwbx9VfauNh-DabAlsPOAzFuJQp0pg==';
+   $options = array(
+        'http' => array(
+            'method' => 'POST',
+            'header' => 'Content-type: application/json',
+            'content' => json_encode($data)
+        )
+    );
+    $context = stream_context_create($options);
+    $result = file_get_contents($azfendpoint, false, $context);
 
     // Check for cURL errors
     if (curl_errno($ch)) {

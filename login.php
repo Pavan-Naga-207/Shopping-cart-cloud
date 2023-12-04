@@ -26,15 +26,16 @@ if(isset($_POST['login']))
    $data=array('email'=>$email,'password'=>$password);
    
    $azfendpoint='https://authenticate44.azurewebsites.net/api/HttpTrigger1?code=Gi4dJV9ZTBStlZjmL9a8N6l1Nwbx9VfauNh-DabAlsPOAzFuJQp0pg=='
-   $options = array(
+   $opts = array(
 	'http' => array(
 		'method' => 'POST',
 		'header' => 'Content-type: application/json',
 		'content' => json_encode($data)
 	)
    );
-   $context = stream_context_create($options);
-   $result = file_get_contents($azureFunctionEndpoint, false, $context);
+   
+   $context = stream_context_create($opts);
+   $result = file_get_contents($azfendpoint, false, $context);
    if ($result !== FALSE) {
 	$response = json_decode($result, true);
 

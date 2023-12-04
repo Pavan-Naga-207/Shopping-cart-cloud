@@ -35,17 +35,6 @@ if(isset($_POST['login']))
     );
     $context = stream_context_create($options);
     $result = file_get_contents($azfendpoint, false, $context);
-
-    // Check for cURL errors
-    if (curl_errno($ch)) {
-        $_SESSION['errmsg'] = "Error in authentication: " . curl_error($ch);
-        $extra = "login.php";
-        header("location: $extra");
-        exit();
-    }
-
-    // Close cURL session
-    curl_close($ch);
    if ($result !== FALSE) {
 	$response = json_decode($result, true);
 
